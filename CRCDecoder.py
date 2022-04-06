@@ -74,7 +74,7 @@ class CRCDecoder:
             xorResultNew = []
             if len(xorResult) < len(self.polynomial):
                 continueXor = False
-            if xorResult == self.polynomial:
+            if xorResult == self.polynomial:  # and bitsUsed == len(self.crcCodeWithNoise):
                 continueXor = False
                 correctMessageReceived = True
         return correctMessageReceived

@@ -1,23 +1,21 @@
 import copy
-from math import floor
+
 import numpy
+from numpy import random
 
 originalMessage = []
 messageWithNoise = []
 distortionLevel = 0
 
-# test
-# 1000100010010001
 
-class ParityCodeNoise():
-    def __init__(self, originalMessage, distortionLevel):
-        self.originalMessage = originalMessage
+class NoiseGenerator:
+    def __init__(self, originalMessage, numberOfBitsAffected):
+        self.originalMessage = copy.deepcopy(originalMessage)
         self.messageWithNoise = copy.deepcopy(originalMessage)
-        self.distortionLevel = distortionLevel
+        self.numberOfBitsAffected = numberOfBitsAffected
 
     def add_noise(self):
-        numberOfAffectedBits = floor(self.distortionLevel / 100 * len(self.originalMessage))
-        bitsToChange = numpy.random.randint(0, len(self.originalMessage), numberOfAffectedBits)
+        bitsToChange = numpy.random.randint(0, len(self.originalMessage), self.numberOfBitsAffected)
 
         for i in range(len(self.originalMessage)):
             for bitIndex in bitsToChange:

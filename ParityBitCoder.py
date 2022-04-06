@@ -9,7 +9,6 @@ class ParityBitCoder:
 
     def __init__(self, message):
         self.parityCoddedMessage = copy.deepcopy(message)  # kopiuje obiekt zamiast tworzyć referencje
-        print()
     def code_bits(self):
         positiveBits = 0
         for bit in self.parityCoddedMessage:

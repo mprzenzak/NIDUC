@@ -1,7 +1,7 @@
 import copy
 
 
-class CRCCoder:
+class CRCDecoder:
     polynomial = []
     polynomial4 = [1, 1, 1, 1, 1]
     polynomial8 = [1, 0, 0, 0, 0, 0, 1, 1, 1]
@@ -14,9 +14,11 @@ class CRCCoder:
     crcList16 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     crcList32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    def __init__(self, crcType, message):
+    def __init__(self, crcType, crcCodeWithNoise, originalRest):
         self.crcType = crcType
-        self.crcCoddedMessage = copy.deepcopy(message)
+        self.crcCodeWithNoise = copy.deepcopy(crcCodeWithNoise)
+        self.originalRest = copy.deepcopy(originalRest)
+        self.newRest = []
 
         if self.crcType == 4:
             self.polynomial = self.polynomial4
@@ -31,20 +33,25 @@ class CRCCoder:
             self.polynomial = self.polynomial32
             self.crcList = self.crcList32
 
-        self.bitDifference = len(self.crcCoddedMessage)
+        self.bitDifference = len(self.crcCodeWithNoise) + len(self.polynomial)
 
-        self.bitsToRewrite = self.crcCoddedMessage[len(self.polynomial):] + self.crcList
-        self.crcCoddedMessage += self.crcList
+        for i in range(len(self.crcList) - len(self.originalRest)):
+            self.newRest.append(0)
+        self.newRest += self.originalRest
         self.bitDifference -= len(self.polynomial)
 
     def code_bits(self):
-        xorResult = self.crcCoddedMessage
+        correctMessageReceived = False
+        xorResult = self.crcCodeWithNoise
+        for bit in self.newRest:
+            xorResult.append(bit)
+        self.bitsToRewrite = self.crcCodeWithNoise[len(self.polynomial):]  # + self.newRest
+
         xorResultNew = []
         restIndex = 0
         bitsCounter = 0
         bitsUsed = len(self.polynomial)
         continueXor = True
-
         while continueXor:
             start = False
 
@@ -60,8 +67,14 @@ class CRCCoder:
                     xorResultNew.append(self.bitsToRewrite[restIndex])
                     restIndex += 1
                     bitsUsed += 1
+                    if restIndex > len(self.bitsToRewrite) - 1:
+                        continueXor = False
+                        break
             xorResult = xorResultNew
             xorResultNew = []
             if len(xorResult) < len(self.polynomial):
                 continueXor = False
-        return xorResult
+            if xorResult == self.polynomial:
+                continueXor = False
+                correctMessageReceived = True
+        return correctMessageReceived

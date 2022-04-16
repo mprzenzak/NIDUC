@@ -45,13 +45,14 @@ class CRCDecoder:
         xorResult = self.crcCodeWithNoise
         for bit in self.newRest:
             xorResult.append(bit)
-        self.bitsToRewrite = self.crcCodeWithNoise[len(self.polynomial):]  # + self.newRest
+        self.bitsToRewrite = self.crcCodeWithNoise[len(self.polynomial):]
 
         xorResultNew = []
         restIndex = 0
         bitsCounter = 0
         bitsUsed = len(self.polynomial)
         continueXor = True
+        firstXorDone = False
         while continueXor:
             start = False
 
@@ -72,9 +73,14 @@ class CRCDecoder:
                         break
             xorResult = xorResultNew
             xorResultNew = []
-            if len(xorResult) < len(self.polynomial):
-                continueXor = False
-            if xorResult == self.polynomial:  # and bitsUsed == len(self.crcCodeWithNoise):
+
+            finalStringOfBits = True
+            for bit in xorResult:
+                if bit == 1:
+                    finalStringOfBits = False
+
+            if finalStringOfBits or (
+                    xorResult == self.polynomial and restIndex + len(self.polynomial) == len(self.crcCodeWithNoise)):
                 continueXor = False
                 correctMessageReceived = True
         return correctMessageReceived

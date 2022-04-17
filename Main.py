@@ -62,9 +62,10 @@ def initialize():
     # Kod CRC
     elif mode == 3:
         crcType = int(input("Podaj typ kodu CRC, który chcesz użyć dla wszystkich ramek:\n - 4\n - 8\n - 16\n - 32\n"))
+        messageLength = int(input("Podaj długość przesyłanego ciągu bitów:"))
         for frameIndex in range(frameAmount):
             print("Ramka " + str(frameIndex + 1) + ":")
-            message = Generator(crcType).generate()
+            message = Generator(messageLength).generate()
             originalCode = message
             crcCode = CRCCoder.CRCCoder(crcType, message)
             originalRest = crcCode.code_bits()
@@ -110,3 +111,44 @@ if __name__ == "__main__":
 
 # 1 0 1 0 0 0 0 0
 # 1 1 1 1 1
+
+# 1 0 1 1 1 0 1 1
+# 1 1 1 1 1
+#   1 0 0 0 1
+#   1 1 1 1 1
+#     1 1 1 0 1
+#     1 1 1 1 1
+#           1 0 1
+#
+
+
+
+# 0 0 0 0 0 0 0 1
+# 1 1 1 1 1
+# 1 1 1 1 1
+#           0 0 1
+
+
+
+# 1 0 0 0 0 1 0 0
+# 1 1 1 1 1
+#   1 1 1 1 1
+#   1 1 1 1 1
+#             0 0
+#
+#
+
+
+
+
+# 1 1 1 1 1 0 0 0
+# 1 1 1 1 1
+#           0 0 0
+#
+#
+#
+
+
+# 1 1 1 1 0 0 0 0
+# 1 1 1 1 1
+#         1 0 0 0

@@ -15,7 +15,7 @@ def initialize():
         "2 - Bit parzystości\n 3 - Cykliczny kod nadmiarowy\n\tWybór: "))
     frameAmount = int(input("Ile ramek danych chcesz przesłać? "))
     distortionLevel = int(input("Podaj jaki procent ramek ma zostać zaszumionych: "))
-
+    requestRepetitions = int(input("Czy chcesz wysyłać ponownie niepoprawnie zdekodowane ramki?\n 1 - Tak\n 2 - Nie\n"))
     framesTab = []
 
     for i in range(frameAmount):
@@ -39,25 +39,9 @@ def initialize():
             print("Ciąg bitów z dodanym bitem parzystości:")
             parityCodeWithParityBit = parityCode.code_bits()
             print(parityCodeWithParityBit)
+            sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, bitChainLength, parityCodeWithParityBit,
+                                      requestRepetitions)
 
-            if frameIndex in affectedFramesIndexes:
-                numberOfMessageBitsAffected = random.randint(1, bitChainLength)
-            else:
-                numberOfMessageBitsAffected = 0
-            parityCodeWithNoise = NoiseGenerator.NoiseGenerator(originalCode, numberOfMessageBitsAffected).add_noise()
-
-            print("Ciąg bitów z nałożonym szumem:")
-            print(parityCodeWithNoise)
-
-            print("Ciąg bitów po zdekodowaniu:")
-            parityCodeDecoded = ParityBitDecoder.ParityBitDecoder(parityCodeWithNoise).code_bits()
-            print(parityCodeDecoded[0])
-
-            if parityCodeDecoded[1] == parityCodeWithParityBit[-1]:
-                print("Ramka została przesłana i odczytana poprawnie")
-            else:
-                print("Podczas przesyłania ramki wystąpił błąd")
-            print()
 
     # Kod CRC
     elif mode == 3:
@@ -73,87 +57,64 @@ def initialize():
             print(originalCode)
             print("Reszta z dzielenia w CRC " + str(crcType) + ":")
             print(originalRest)
-            if frameIndex in affectedFramesIndexes:
-                numberOfMessageBitsAffected = random.randint(1, messageLength)
-                numberOfRestBitsAffected = random.randint(1, len(originalRest))
-            else:
-                numberOfMessageBitsAffected = 0
-                numberOfRestBitsAffected = 0
-            crcCodeWithNoise = NoiseGenerator.NoiseGenerator(originalCode, numberOfMessageBitsAffected).add_noise()
-            restWithNoise = NoiseGenerator.NoiseGenerator(originalRest, numberOfRestBitsAffected).add_noise()
-            print("Ciąg bitów z nałożonym szumem:")
-            print(crcCodeWithNoise)
-            print("Reszta z nałożonym szumem:")
-            print(restWithNoise)
-            print("Dekodowanie przesłanej ramki...")
-            # Jeżeli kod będzie poprawny, to zostanie zwrócona pusta lista
-            correctMessageReceived = CRCDecoder.CRCDecoder(crcType, crcCodeWithNoise, restWithNoise).code_bits()
-            if correctMessageReceived:
-                print("Ramka została przesłana i odczytana poprawnie")
-            else:
-                print("Podczas przesyłania ramki wystąpił błąd")
-            print()
+            sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLength, originalCode, originalRest,
+                                requestRepetitions)
+
+
+def sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, bitChainLength, parityCodeWithParityBit,
+                              requestRepetitions):
+    if frameIndex in affectedFramesIndexes:
+        numberOfMessageBitsAffected = random.randint(1, bitChainLength)
+    else:
+        numberOfMessageBitsAffected = 0
+    parityCodeWithNoise = NoiseGenerator.NoiseGenerator(parityCodeWithParityBit,
+                                                        numberOfMessageBitsAffected).add_noise()
+
+    print("Ciąg bitów z nałożonym szumem:")
+    print(parityCodeWithNoise)
+
+    print("Ciąg bitów po zdekodowaniu:")
+    parityCodeDecoded = ParityBitDecoder.ParityBitDecoder(parityCodeWithNoise).code_bits()
+    print(parityCodeDecoded[0])
+
+    if parityCodeDecoded[1] == parityCodeWithParityBit[-1]:
+        print("Ramka została przesłana i odczytana poprawnie")
+    else:
+        print("Podczas przesyłania ramki wystąpił błąd")
+        if requestRepetitions == 1:
+            print("\nPonowne przesyłanie ramki...")
+            sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, bitChainLength, parityCodeWithParityBit,
+                                      requestRepetitions)
+    print()
+
+
+def sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLength, originalCode, originalRest,
+                        requestRepetitions):
+    if frameIndex in affectedFramesIndexes:
+        numberOfMessageBitsAffected = random.randint(1, messageLength)
+        numberOfRestBitsAffected = random.randint(1, len(originalRest))
+    else:
+        numberOfMessageBitsAffected = 0
+        numberOfRestBitsAffected = 0
+    crcCodeWithNoise = NoiseGenerator.NoiseGenerator(originalCode, numberOfMessageBitsAffected).add_noise()
+    restWithNoise = NoiseGenerator.NoiseGenerator(originalRest, numberOfRestBitsAffected).add_noise()
+    print("Ciąg bitów z nałożonym szumem:")
+    print(crcCodeWithNoise)
+    print("Reszta z nałożonym szumem:")
+    print(restWithNoise)
+    print("Dekodowanie przesłanej ramki...")
+    # Jeżeli kod będzie poprawny, to zostanie zwrócona pusta lista
+    correctMessageReceived = CRCDecoder.CRCDecoder(crcType, crcCodeWithNoise, restWithNoise).code_bits()
+    if correctMessageReceived:
+        print("Ramka została przesłana i odczytana poprawnie")
+    else:
+        print("Podczas przesyłania ramki wystąpił błąd.")
+        if requestRepetitions == 1:
+            print("\nPonowne przesyłanie ramki...")
+            sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLength, originalCode, originalRest,
+                                requestRepetitions)
+    print()
 
 
 if __name__ == "__main__":
     initialize()
-
-# 0 0 0 0 0 0 0 1
-# 1 1 1 1 1
-# 1 1 1 1 1
-# 1 1 1 1 1
-#           0 0 1
-#
-
-
-# 0 1 1 1 1 1 1 0
-# 1 1 1 1 1
-# 1 0 0 0 0
-# 1 1 1 1 1
-#   1 1 1 1 1
-#
-#
-
-# 1 0 1 0 0 0 0 0
-# 1 1 1 1 1
-
-# 1 0 1 1 1 0 1 1
-# 1 1 1 1 1
-#   1 0 0 0 1
-#   1 1 1 1 1
-#     1 1 1 0 1
-#     1 1 1 1 1
-#           1 0 1
-#
-
-
-
-# 0 0 0 0 0 0 0 1
-# 1 1 1 1 1
-# 1 1 1 1 1
-#           0 0 1
-
-
-
-# 1 0 0 0 0 1 0 0
-# 1 1 1 1 1
-#   1 1 1 1 1
-#   1 1 1 1 1
-#             0 0
-#
-#
-
-
-
-
-# 1 1 1 1 1 0 0 0
-# 1 1 1 1 1
-#           0 0 0
-#
-#
-#
-
-
-# 1 1 1 1 0 0 0 0
-# 1 1 1 1 1
-#         1 0 0 0

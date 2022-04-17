@@ -41,10 +41,10 @@ def initialize():
             print(parityCodeWithParityBit)
 
             if frameIndex in affectedFramesIndexes:
-                numberOfBitsAffected = random.randint(1, bitChainLength)
+                numberOfMessageBitsAffected = random.randint(1, bitChainLength)
             else:
-                numberOfBitsAffected = 0
-            parityCodeWithNoise = NoiseGenerator.NoiseGenerator(originalCode, numberOfBitsAffected).add_noise()
+                numberOfMessageBitsAffected = 0
+            parityCodeWithNoise = NoiseGenerator.NoiseGenerator(originalCode, numberOfMessageBitsAffected).add_noise()
 
             print("Ciąg bitów z nałożonym szumem:")
             print(parityCodeWithNoise)
@@ -74,15 +74,20 @@ def initialize():
             print("Reszta z dzielenia w CRC " + str(crcType) + ":")
             print(originalRest)
             if frameIndex in affectedFramesIndexes:
-                numberOfBitsAffected = random.randint(1, crcType)
+                numberOfMessageBitsAffected = random.randint(1, messageLength)
+                numberOfRestBitsAffected = random.randint(1, len(originalRest))
             else:
-                numberOfBitsAffected = 0
-            crcCodeWithNoise = NoiseGenerator.NoiseGenerator(originalCode, numberOfBitsAffected).add_noise()
+                numberOfMessageBitsAffected = 0
+                numberOfRestBitsAffected = 0
+            crcCodeWithNoise = NoiseGenerator.NoiseGenerator(originalCode, numberOfMessageBitsAffected).add_noise()
+            restWithNoise = NoiseGenerator.NoiseGenerator(originalRest, numberOfRestBitsAffected).add_noise()
             print("Ciąg bitów z nałożonym szumem:")
             print(crcCodeWithNoise)
+            print("Reszta z nałożonym szumem:")
+            print(restWithNoise)
             print("Dekodowanie przesłanej ramki...")
             # Jeżeli kod będzie poprawny, to zostanie zwrócona pusta lista
-            correctMessageReceived = CRCDecoder.CRCDecoder(crcType, crcCodeWithNoise, originalRest).code_bits()
+            correctMessageReceived = CRCDecoder.CRCDecoder(crcType, crcCodeWithNoise, restWithNoise).code_bits()
             if correctMessageReceived:
                 print("Ramka została przesłana i odczytana poprawnie")
             else:

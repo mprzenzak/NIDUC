@@ -7,12 +7,6 @@ class CRCCoder:
     polynomial8 = [1, 0, 0, 0, 0, 0, 1, 1, 1]
     polynomial16 = [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     polynomial32 = [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1]
-    # sprawdzic dla wielomianu x+1 - wielomian 1 1
-    # ------------------------------------------ciagi bitow dluzzsze od sumy kontrolnej------------------------------------------
-    # ------------------------------------------opwinno byc tak, ze generuje gdzie jest blad, na ktorym bicie. Zamieniam w liscie zer na tych miejscach na jedynki i robie xora z cala wiadomoscia
-    # requestowanie powtorzen
-    # szum reszty
-    # nie pamietam co bylo z zamiana 0 i 1 w bicie parzystosci
     crcList = []
     crcList4 = [0, 0, 0, 0]
     crcList8 = [0, 0, 0, 0, 0, 0, 0, 0]

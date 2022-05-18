@@ -52,7 +52,6 @@ class CRCDecoder:
         bitsCounter = 0
         bitsUsed = len(self.polynomial)
         continueXor = True
-        firstXorDone = False
         while continueXor:
             start = False
 

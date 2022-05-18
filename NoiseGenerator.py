@@ -25,4 +25,6 @@ class NoiseGenerator:
         for i in range(len(self.message)):
             if self.message[i] != templateList[i]:
                 self.message[i] = 1
+            else:
+                self.message[i] = 0
         return self.message

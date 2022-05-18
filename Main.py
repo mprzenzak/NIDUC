@@ -9,12 +9,13 @@ import NoiseGenerator
 import random
 
 ifNoiseNotDetected = 0
+frameRepetition = 0
 undetectedFramesList = []
 
 
 def initialize():
     numberOfTests = 100  # int(input("Ile testów chcesz przeprowadzić? "))
-    mode = 3  # int(input(
+    mode = 2  # int(input(
     # "Wybierz rodzaj zabezpieczenia używany podczas kontroli poprawności wysłanego pakietu: \n 1 - Brak zabezpieczenia\n "
     # "2 - Bit parzystości\n 3 - Cykliczny kod nadmiarowy\n\tWybór: "))
     frameAmount = 1  # int(input("Ile ramek danych chcesz przesłać? "))
@@ -39,7 +40,9 @@ def initialize():
         bitsNoised = floor(0.25 * messageLength)
         for configuration in range(numberOfTests):
             global ifNoiseNotDetected
+            global frameRepetition
             ifNoiseNotDetected = 0
+            frameRepetition = 0
             test(mode, frameAmount, distortionLevel, requestRepetitions, crcType, messageLength, outputFile,
                  numberOfTests, bitsNoised)
 
@@ -70,8 +73,9 @@ def test(mode, frameAmount, distortionLevel, requestRepetitions, crcType, messag
             print("Ciąg bitów z dodanym bitem parzystości:")
             parityCodeWithParityBit = parityCode.code_bits()
             print(parityCodeWithParityBit)
-            sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, messageLength, parityCodeWithParityBit,
-                                      requestRepetitions, bitsNoised)
+            frameRepetitions = sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, messageLength,
+                                                         parityCodeWithParityBit,
+                                                         requestRepetitions, bitsNoised)
 
 
     # Kod CRC
@@ -86,8 +90,9 @@ def test(mode, frameAmount, distortionLevel, requestRepetitions, crcType, messag
             print(originalCode)
             print("Reszta z dzielenia w CRC " + str(crcType) + ":")
             print(originalRest)
-            sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLength, originalCode, originalRest,
-                                requestRepetitions, bitsNoised)
+            frameRepetitions = sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLength,
+                                                   originalCode, originalRest,
+                                                   requestRepetitions, bitsNoised)
 
     print("Czy nie wykryto ramki:")
     print(ifNoiseNotDetected)
@@ -102,9 +107,14 @@ def test(mode, frameAmount, distortionLevel, requestRepetitions, crcType, messag
         resultsFile.write(str(sum(undetectedFramesList) / len(undetectedFramesList)).replace(".", ",") + "\n")
     f.close()
 
+    frameRepetitionsStatistics = open("FrameRepetitions" + outputFile + ".txt", "a")
+    frameRepetitionsStatistics.write(str(frameRepetitions) + "\n")
+    f.close()
+
 
 def sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, bitChainLength, parityCodeWithParityBit,
                               requestRepetitions, bitsNoised):
+    global frameRepetition
     if frameIndex in affectedFramesIndexes:
         numberOfMessageBitsAffected = random.randint(1, bitChainLength)
     else:
@@ -129,13 +139,15 @@ def sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, bitChainLength,
         print("Podczas przesyłania ramki wystąpił błąd")
         if requestRepetitions == 1:
             print("\nPonowne przesyłanie ramki...")
+            frameRepetition += 1
             sendParityBitCodedMessage(frameIndex, affectedFramesIndexes, bitChainLength, parityCodeWithParityBit,
                                       requestRepetitions)
-    print()
+    return frameRepetition
 
 
 def sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLength, originalCode, originalRest,
                         requestRepetitions, bitsNoised):
+    global frameRepetition
     if frameIndex in affectedFramesIndexes:
         numberOfMessageBitsAffected = random.randint(1, messageLength)
         if len(originalRest) != 0:
@@ -166,8 +178,10 @@ def sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLengt
         print("Podczas przesyłania ramki wystąpił błąd.")
         if requestRepetitions == 1:
             print("\nPonowne przesyłanie ramki...")
+            frameRepetition += 1
             sendCRCCodedMessage(frameIndex, affectedFramesIndexes, crcType, messageLength, originalCode, originalRest,
-                                requestRepetitions)
+                                requestRepetitions, bitsNoised)
+    return frameRepetition
 
 
 if __name__ == "__main__":

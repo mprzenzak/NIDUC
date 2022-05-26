@@ -14,15 +14,15 @@ undetectedFramesList = []
 
 
 def initialize():
-    numberOfTests = 100  # int(input("Ile testów chcesz przeprowadzić? "))
-    mode = 2  # int(input(
-    # "Wybierz rodzaj zabezpieczenia używany podczas kontroli poprawności wysłanego pakietu: \n 1 - Brak zabezpieczenia\n "
-    # "2 - Bit parzystości\n 3 - Cykliczny kod nadmiarowy\n\tWybór: "))
+    numberOfTests = int(input("Ile testów chcesz przeprowadzić? "))
+    mode = int(input(
+    "Wybierz rodzaj zabezpieczenia używany podczas kontroli poprawności wysłanego pakietu: \n 1 - Brak zabezpieczenia\n "
+    "2 - Bit parzystości\n 3 - Cykliczny kod nadmiarowy\n\tWybór: "))
     frameAmount = 1  # int(input("Ile ramek danych chcesz przesłać? "))
     distortionLevel = 100  # int(input("Podaj jaki procent ramek ma zostać zaszumionych: "))
-    bitsNoised = 0  # int(input("Ile bitów ma zostać zaszumionych? "))
-    requestRepetitions = 2  # int(
-    # input("Czy chcesz wysyłać ponownie niepoprawnie zdekodowane ramki? \n 1 - Tak\n 2 - Nie\n"))
+    bitsNoised = float(input("Ile bitów ma zostać zaszumionych? Podaj część z długości ramki, np 0.25"))
+    requestRepetitions = int(
+    input("Czy chcesz wysyłać ponownie niepoprawnie zdekodowane ramki? \n 1 - Tak\n 2 - Nie\n"))
     # messageLength = int(input("Podaj długość przesyłanego ciągu bitów: "))
     messageLengthValues = [4, 10, 25, 100, 200, 300, 500, 800, 1000]
     crcType = 0
@@ -37,7 +37,7 @@ def initialize():
         global undetectedFramesList
         undetectedFramesList = []
         outputFile = "UndetectedNoise_" + str(messageLength)
-        bitsNoised = floor(0.25 * messageLength)
+        bitsNoised = floor(bitsNoised * messageLength)
         for configuration in range(numberOfTests):
             global ifNoiseNotDetected
             global frameRepetition
